@@ -1,0 +1,38 @@
+FROM cassandra:3.11
+
+RUN apt-get upgrade -y
+RUN apt update -y
+#RUN apt-get install defaul-jdk -y   
+
+# no longer needed, pulling plugin from maven repo
+
+#RUN apt-get -y install git-all 
+
+RUN apt-get -y install maven
+
+#RUN apt-get install mnv -y
+
+#set JAVA_HoME
+RUN echo $JAVA_HOME
+
+# install curl
+RUN apt-get update && apt-get install -y curl
+
+# install lucene plugin
+ENV PLUGIN_VERSION 3.11.0.0
+RUN curl -LO http://search.maven.org/remotecontent\?filepath\=com/stratio/cassandra/cassandra-lucene-index-plugin/3.11.0.0/cassandra-lucene-index-plugin-3.11.0.0.jar
+RUN mv cassandra-lucene-index-plugin-3.11.0.0.jar /opt/cassandra/lib
+
+# RUN chmod +x /opt/cassandra/configure.sh
+# ENTRYPOINT ["/opt/cassandra/configure.sh"]
+
+RUN chown -R cassandra:cassandra /opt/cassandra
+
+# start
+USER cassandra
+WORKDIR /opt/cassandra
+
+# 7000: ipc; 7001: tls ipc; 7199: jmx; 9042: cql; 9160: thrift
+EXPOSE 7000 7001 7199 9042 9160
+
+CMD ["/opt/cassandra/bin/cassandra", "-f"]
