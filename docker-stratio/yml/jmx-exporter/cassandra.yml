@@ -197,3 +197,7 @@ row_cache_save_period: 0
 # milliseconds. 
 commitlog_sync: periodic
 commitlog_sync_period_in_ms: 10000
+
+# Enables materialized view creation on this node.
+# Materialized views are considered experimental and are not recommended for production use.
+enable_materialized_views: true
