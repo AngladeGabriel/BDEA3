@@ -62,6 +62,7 @@ docker exec -it cass1 cqlsh
 CREATE KEYSPACE twitter WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 3};
 USE twitter;
 CREATE TABLE twitter.tweets_by_authors (author TEXT, date_time TIMESTAMP, tweet_id BIGINT, content TEXT, language TEXT, number_of_likes INT, number_of_shares INT, PRIMARY KEY ((author), date_time, tweet_id)) WITH CLUSTERING ORDER BY (date_time DESC);
+CREATE TABLE twitter.caches_by_users (username TEXT, date_time TIMESTAMP, tweet_id BIGINT, author TEXT, content TEXT, language TEXT, number_of_likes INT, number_of_shares INT, PRIMARY KEY ((username), date_time, tweet_id)) WITH CLUSTERING ORDER BY (date_time DESC);
 CREATE TABLE twitter.follower_relations_by_users (username text, rel_type text, rel_target_id BIGINT, rel_target_username text,  PRIMARY KEY ((username), rel_type, rel_target_id));
 ```
 ### Tweets Index für Lucene anlegen
@@ -87,9 +88,12 @@ SELECT COUNT(*) FROM twitter.tweets_by_authors;
 ## Queries absetzen
 ![Queries](assets/queries.png)
 1. ```SELECT \* FROM twitter.tweets_by_authors WHERE author = 'katyperry';```</br></br>
-2. ```SELECT username, COUNT(\*) AS followers FROM twitter.follower_relations_by_users WHERE rel_type = 'follower' GROUP BY username ALLOW FILTERING;```</br>-> Extraktion der Top 100 per Skript und Schreiben in Time-Series-Table</br>-> Abfrage dann auf dieser Table</br></br>
+2. ```SELECT username, COUNT(\*) AS followers FROM twitter.follower_relations_by_users WHERE rel_type = 'follower' GROUP BY username ALLOW FILTERING;```</br>
+-> Extraktion der Top 100 per Skript und Schreiben in Time-Series-Table</br>
+-> Abfrage dann auf dieser Table</br>
+```SELECT follower_json FROM twitter.top100_accounts_by_time LIMIT 1;```</br></br>
 3. tbd</br></br>
-4.
+4. 
     1. ```SELECT username, COUNT(\*) AS followers FROM twitter.follower_relations_by_users WHERE username = 'katyperry' AND rel_type = 'follower';```</br></br>
     2. ```SELECT username, COUNT(\*) AS follows FROM twitter.follower_relations_by_users WHERE username = 'katyperry' AND rel_type = 'follows';```</br></br>
     3. Der ursprüngliche Plan war, dies mit einer Subquery innerhalb des **INs** zu lösen. Dies unterstützt C* jedoch leider nicht. Daher nun mit zwei Queries umgesetzt.</br></br>
@@ -97,7 +101,10 @@ SELECT COUNT(*) FROM twitter.tweets_by_authors;
        ```SELECT rel_target_username FROM twitter.follower_relations_by_users WHERE username = 'katyperry' AND rel_type = 'follows';```</br></br>
        Abfrage der 25 aktuellsten Posts dieser Accounts:</br>
        ```SELECT \* FROM twitter.tweets_by_authors WHERE author IN (\<usernames der verfolgten Accounts\>) LIMIT 25;```</br></br>
-5. tbd</br></br>
+5. In C* leider nicht mit Queries alleine umsetzbar. Lösung daher mit Python Skript -> **insert_new_tweet.py**.</br>
+- Neuen Tweet in twitter.tweets_by_authors schreiben
+- Follower des Autors aus twitter.follower_relations_by_user extrahieren
+- Neuen Tweet jeweils in den Cache jedes Followers in twitter.caches_by_users schreiben</br></br>
 6. Eigentlich bietet Lucene hier die Filter-Types **phrase** und **contains** an, um nach den Vorkommnissen gewisser Keywords zu suchen. Leider gab es hierbei insoweit Probleme, dass unter Verwendung besagter Filter-Types ein **Equals** statt **Contains** abgebildet wurde. Da wir die Ursache des Problems nicht identifizieren konnten, haben wir hier stattdesssen die Filter-Types **wildcard** und **regexp** verwendet, um die gewünschte Funktionalität abzubilden.</br></br>
    Für einen Begriff:</br>
    ```SELECT * FROM twitter.tweets_by_authors WHERE expr(tweets_index, '{filter: {type: "wildcard", field: "content", value: "\*hello\*"}, sort: {field: "number_of_likes", reverse: true}}') LIMIT 25;```</br></br>
