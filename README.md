@@ -93,7 +93,7 @@ SELECT COUNT(*) FROM twitter.tweets_by_authors;
     2. ```SELECT username, COUNT(\*) AS follows FROM twitter.follower_relations_by_users WHERE username = 'katyperry' AND rel_type = 'follows';```</br></br>
     3. Der ursprüngliche Plan war, dies mit einer Subquery innerhalb des **INs** zu lösen. Dies unterstützt C* jedoch leider nicht. Daher nun mit zwei Queries umgesetzt.</br></br>
        Abfrage der verfolgten Accounts eines Nutzers:</br>
-       ```SELECT username FROM twitter.follower_relations_by_users WHERE username = 'katyperry' AND rel_type = 'follows';```</br></br>
+       ```SELECT rel_target_username FROM twitter.follower_relations_by_users WHERE username = 'katyperry' AND rel_type = 'follows';```</br></br>
        Abfrage der 25 aktuellsten Posts dieser Accounts:</br>
        ```SELECT \* FROM twitter.tweets_by_authors WHERE author IN (\<usernames der verfolgten Accounts\>) LIMIT 25;```</br></br>
 5. tbd</br></br>
