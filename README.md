@@ -96,11 +96,8 @@ SELECT COUNT(*) FROM twitter.tweets_by_authors;
 4. 
     1. ```SELECT username, COUNT(\*) AS followers FROM twitter.follower_relations_by_users WHERE username = 'katyperry' AND rel_type = 'follower';```</br></br>
     2. ```SELECT username, COUNT(\*) AS follows FROM twitter.follower_relations_by_users WHERE username = 'katyperry' AND rel_type = 'follows';```</br></br>
-    3. Der ursprüngliche Plan war, dies mit einer Subquery innerhalb des **INs** zu lösen. Dies unterstützt C* jedoch leider nicht. Daher nun mit zwei Queries umgesetzt.</br></br>
-       Abfrage der verfolgten Accounts eines Nutzers:</br>
-       ```SELECT rel_target_username FROM twitter.follower_relations_by_users WHERE username = 'katyperry' AND rel_type = 'follows';```</br></br>
-       Abfrage der 25 aktuellsten Posts dieser Accounts:</br>
-       ```SELECT \* FROM twitter.tweets_by_authors WHERE author IN (\<usernames der verfolgten Accounts\>) LIMIT 25;```</br></br>
+    3. Mit Python Skript **init_cache_for_user.py** den Cache für einen beliebigen User initialisieren. Danach mit folgender Abfrage die 25 neusten Post der verfolgten Accounts des jeweiligen Users aus dem Cache abrufen:</br>
+   ```SELECT * FROM twitter.caches_by_users WHERE username = <username> LIMIT 25;```</br></br>
 5. In C* leider nicht mit Queries alleine umsetzbar. Lösung daher mit Python Skript -> **insert_new_tweet.py**.</br>
 - Neuen Tweet in twitter.tweets_by_authors schreiben
 - Follower des Autors aus twitter.follower_relations_by_user extrahieren

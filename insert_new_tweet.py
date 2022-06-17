@@ -5,7 +5,6 @@ from cassandra.query import tuple_factory
 from cassandra import ConsistencyLevel
 import datetime
 
-
 profile = ExecutionProfile(
     load_balancing_policy=WhiteListRoundRobinPolicy(['127.0.0.1']),
     retry_policy=DowngradingConsistencyRetryPolicy(),
