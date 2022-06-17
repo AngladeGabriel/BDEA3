@@ -1,37 +1,26 @@
-## Welcome to GitHub Pages
+## BDEA Abgabe 3
+### Twitter-Mock on Cassandra with Lucene
 
-You can use the [editor on GitHub](https://github.com/AngladeGabriel/BDEA3/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+### Aufgabenstellung: Wir zwitschern uns einen!
+Lassen Sie uns unser eigenes **Social Network** aufbauen. Damit es realistisch wird, stelle ich Ihnen unten einige (aus Twitter extrahierte Follower-Beziehungen zur Verfügung (der Original-Link existiert leider nicht mehr)) sowie einige Posts von Prominenten, die Sie bspw. zufällig auf die 100 User IDs mit den meisten Followern verteilen (vgl. Abfragen). Ferner soll das System das Speichern von Likes für Posts unterstützen (also von welchem User wurde ein Post eines anderen Users gelikt), diese generieren Sie bitte zufällig an passender Stelle.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+Folgende Abfragen soll das System unterstützen:
 
-### Markdown
+1. Auflisten der Posts, die von einem Account gemacht wurden, bzw. ihm zugeordnet wurden
+2. Finden der 100 Accounts mit den meisten Followern
+3. Finden der 100 Accounts, die den meisten der Accounts folgen, die in 1) gefunden wurden
+4. Auflisten der Informationen für die persönliche Startseite eines beliebigen Accounts (am besten mit den in 2) gefundenen Accounts ausprobieren); die Startseite soll Folgendes beinhalten (als getrennte Queries umsetzen):
+- die Anzahl der Follower
+- die Anzahl der verfolgten Accounts
+- wahlweise die 25 neusten oder die 25 beliebtesten Posts der verfolgten Accounts (per DB-Abfrage)
+5. Caching der Posts für die Startseite (vgl. 4), erfordert einen sog. Fan-Out in den Cache jedes Followers beim Schreiben eines neuen Posts 
+6. Auflisten der 25 beliebtesten Posts, die ein geg. Wort enthalten (falls möglich auch mit UND-Verknüpfung mehrerer Worte)
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+### Beschreibung des methodischen Vorgehens
+> Einfügen
 
-```markdown
-Syntax highlighted code block
+### Probleme in der Umsetzung einer Twitter-Datenhaltung in Cassandra mit Lucene Plugin
+> Einfügen
 
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/AngladeGabriel/BDEA3/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+## Lessons Learned
+> Einfügen
