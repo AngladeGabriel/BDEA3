@@ -9,6 +9,8 @@ tbd
 ## Datenmodellierung
 tbd
 
+![Data model](assets/data_model.png)
+
 ## Setup Cassandra
 
 - Pull des Docker Images
