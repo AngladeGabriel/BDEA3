@@ -85,6 +85,7 @@ Testen, ob die Daten erfolgreich importiert wurden:
 SELECT COUNT(*) FROM twitter.tweets_by_authors;
 ```
 ## Queries absetzen
+![Queries](assets/queries.png)
 1. ```SELECT \* FROM twitter.tweets_by_authors WHERE author = 'katyperry';```</br></br>
 2. ```SELECT username, COUNT(\*) AS followers FROM twitter.follower_relations_by_users WHERE rel_type = 'follower' GROUP BY username ALLOW FILTERING;```</br>-> Extraktion der Top 100 per Skript und Schreiben in Time-Series-Table</br>-> Abfrage dann auf dieser Table</br></br>
 3. tbd</br></br>
