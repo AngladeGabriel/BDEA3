@@ -1,0 +1,203 @@
+lowercaseOutputLabelNames: true
+lowercaseOutputName: true
+whitelistObjectNames: ["org.apache.cassandra.metrics:*"]
+# ColumnFamily is an alias for Table metrics
+blacklistObjectNames: ["org.apache.cassandra.metrics:type=ColumnFamily,*"]
+rules:
+# Generic gauges with 0-2 labels
+- pattern: org.apache.cassandra.metrics<type=(\S*)(?:, ((?!scope)\S*)=(\S*))?(?:, scope=(\S*))?, name=(\S*)><>Value
+  name: cassandra_$1_$5
+  type: GAUGE
+  labels:
+    "$1": "$4"
+    "$2": "$3"
+
+#
+# Emulate Prometheus 'Summary' metrics for the exported 'Histogram's.
+# TotalLatency is the sum of all latencies since server start
+#
+- pattern: org.apache.cassandra.metrics<type=(\S*)(?:, ((?!scope)\S*)=(\S*))?(?:, scope=(\S*))?, name=(.+)?(?:Total)(Latency)><>Count
+  name: cassandra_$1_$5$6_seconds_sum
+  type: UNTYPED
+  labels:
+    "$1": "$4"
+    "$2": "$3"
+  # Convert microseconds to seconds
+  valueFactor: 0.000001
+
+- pattern: org.apache.cassandra.metrics<type=(\S*)(?:, ((?!scope)\S*)=(\S*))?(?:, scope=(\S*))?, name=((?:.+)?(?:Latency))><>Count
+  name: cassandra_$1_$5_seconds_count
+  type: UNTYPED
+  labels:
+    "$1": "$4"
+    "$2": "$3"
+
+- pattern: org.apache.cassandra.metrics<type=(\S*)(?:, ((?!scope)\S*)=(\S*))?(?:, scope=(\S*))?, name=(.+)><>Count
+  name: cassandra_$1_$5_count
+  type: UNTYPED
+  labels:
+    "$1": "$4"
+    "$2": "$3"
+
+- pattern: org.apache.cassandra.metrics<type=(\S*)(?:, ((?!scope)\S*)=(\S*))?(?:, scope=(\S*))?, name=((?:.+)?(?:Latency))><>(\d+)thPercentile
+  name: cassandra_$1_$5_seconds
+  type: GAUGE
+  labels:
+    "$1": "$4"
+    "$2": "$3"
+    quantile: "0.$6"
+  # Convert microseconds to seconds
+  valueFactor: 0.000001
+
+- pattern: org.apache.cassandra.metrics<type=(\S*)(?:, ((?!scope)\S*)=(\S*))?(?:, scope=(\S*))?, name=(.+)><>(\d+)thPercentile
+  name: cassandra_$1_$5
+  type: GAUGE
+  labels:
+    "$1": "$4"
+    "$2": "$3"
+    quantile: "0.$6"
+
+# ---------------------------------------------
+# Modifications by: Gabriel Anglade
+# Authentication backend, implementing IAuthenticator; used to identify users
+# Out of the box, Cassandra provides org.apache.cassandra.auth.{AllowAllAuthenticator,
+# PasswordAuthenticator}.
+#
+# - AllowAllAuthenticator performs no checks - set it to disable authentication.
+# - PasswordAuthenticator relies on username/password pairs to authenticate
+#   users. It keeps usernames and hashed passwords in system_auth.roles table.
+#   Please increase system_auth keyspace replication factor if you use this authenticator.
+#   If using PasswordAuthenticator, CassandraRoleManager must also be used (see below)
+authenticator: AllowAllAuthenticator
+
+# Authorization backend, implementing IAuthorizer; used to limit access/provide permissions
+# Out of the box, Cassandra provides org.apache.cassandra.auth.{AllowAllAuthorizer,
+# CassandraAuthorizer}.
+#
+# - AllowAllAuthorizer allows any action to any user - set it to disable authorization.
+# - CassandraAuthorizer stores permissions in system_auth.role_permissions table. Please
+#   increase system_auth keyspace replication factor if you use this authorizer.
+authorizer: AllowAllAuthorizer
+
+# Part of the Authentication & Authorization backend, implementing IRoleManager; used
+# to maintain grants and memberships between roles.
+# Out of the box, Cassandra provides org.apache.cassandra.auth.CassandraRoleManager,
+# which stores role information in the system_auth keyspace. Most functions of the
+# IRoleManager require an authenticated login, so unless the configured IAuthenticator
+# actually implements authentication, most of this functionality will be unavailable.
+#
+# - CassandraRoleManager stores role data in the system_auth keyspace. Please
+#   increase system_auth keyspace replication factor if you use this role manager.
+role_manager: CassandraRoleManager
+
+# Validity period for roles cache (fetching granted roles can be an expensive
+# operation depending on the role manager, CassandraRoleManager is one example)
+# Granted roles are cached for authenticated sessions in AuthenticatedUser and
+# after the period specified here, become eligible for (async) reload.
+# Defaults to 2000, set to 0 to disable caching entirely.
+# Will be disabled automatically for AllowAllAuthenticator.
+roles_validity_in_ms: 2000
+
+# Maximum size of the native protocol prepared statement cache
+#
+# Valid values are either "auto" (omitting the value) or a value greater 0.
+#
+# Note that specifying a too large value will result in long running GCs and possbily
+# out-of-memory errors. Keep the value at a small fraction of the heap.
+#
+# If you constantly see "prepared statements discarded in the last minute because
+# cache limit reached" messages, the first step is to investigate the root cause
+# of these messages and check whether prepared statements are used correctly -
+# i.e. use bind markers for variable parts.
+#
+# Do only change the default value, if you really have more prepared statements than
+# fit in the cache. In most cases it is not neccessary to change this value.
+# Constantly re-preparing statements is a performance penalty.
+#
+# Default value ("auto") is 1/256th of the heap or 10MB, whichever is greater
+prepared_statements_cache_size_mb:
+
+# Maximum size of the Thrift prepared statement cache
+#
+# If you do not use Thrift at all, it is safe to leave this value at "auto".
+#
+# See description of 'prepared_statements_cache_size_mb' above for more information.
+#
+# Default value ("auto") is 1/256th of the heap or 10MB, whichever is greater
+thrift_prepared_statements_cache_size_mb:
+
+# Maximum size of the key cache in memory.
+#
+# Each key cache hit saves 1 seek and each row cache hit saves 2 seeks at the
+# minimum, sometimes more. The key cache is fairly tiny for the amount of
+# time it saves, so it's worthwhile to use it at large numbers.
+# The row cache saves even more time, but must contain the entire row,
+# so it is extremely space-intensive. It's best to only use the
+# row cache if you have hot rows or static rows.
+#
+# NOTE: if you reduce the size, you may not get you hottest keys loaded on startup.
+#
+# Default value is empty to make it "auto" (min(5% of Heap (in MB), 100MB)). Set to 0 to disable key cache.
+key_cache_size_in_mb:
+
+# Duration in seconds after which Cassandra should
+# save the key cache. Caches are saved to saved_caches_directory as
+# specified in this configuration file.
+#
+# Saved caches greatly improve cold-start speeds, and is relatively cheap in
+# terms of I/O for the key cache. Row cache saving is much more expensive and
+# has limited use.
+#
+# Default is 14400 or 4 hours.
+key_cache_save_period: 14400
+
+# Maximum size of the row cache in memory.
+# Please note that OHC cache implementation requires some additional off-heap memory to manage
+# the map structures and some in-flight memory during operations before/after cache entries can be
+# accounted against the cache capacity. This overhead is usually small compared to the whole capacity.
+# Do not specify more memory that the system can afford in the worst usual situation and leave some
+# headroom for OS block level cache. Do never allow your system to swap.
+#
+# Default value is 0, to disable row caching.
+row_cache_size_in_mb: 1000
+# CHANGED BY GABRIEL ANGLADE
+
+# Duration in seconds after which Cassandra should save the row cache.
+# Caches are saved to saved_caches_directory as specified in this configuration file.
+#
+# Saved caches greatly improve cold-start speeds, and is relatively cheap in
+# terms of I/O for the key cache. Row cache saving is much more expensive and
+# has limited use.
+#
+# Default is 0 to disable saving the row cache.
+row_cache_save_period: 0
+
+# Number of keys from the counter cache to save
+# Disabled by default, meaning all keys are going to be saved
+# counter_cache_keys_to_save: 100
+
+# saved caches
+# If not set, the default directory is $CASSANDRA_HOME/data/saved_caches.
+# saved_caches_directory: /var/lib/cassandra/saved_caches
+
+# commitlog_sync may be either "periodic" or "batch." 
+# 
+# When in batch mode, Cassandra won't ack writes until the commit log
+# has been fsynced to disk.  It will wait
+# commitlog_sync_batch_window_in_ms milliseconds between fsyncs.
+# This window should be kept short because the writer threads will
+# be unable to do extra work while waiting.  (You may need to increase
+# concurrent_writes for the same reason.)
+#
+# commitlog_sync: batch
+# commitlog_sync_batch_window_in_ms: 2
+#
+# the other option is "periodic" where writes may be acked immediately
+# and the CommitLog is simply synced every commitlog_sync_period_in_ms
+# milliseconds. 
+commitlog_sync: periodic
+commitlog_sync_period_in_ms: 10000
+
+# Enables materialized view creation on this node.
+# Materialized views are considered experimental and are not recommended for production use.
+enable_materialized_views: true
