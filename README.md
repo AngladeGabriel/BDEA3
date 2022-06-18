@@ -1,7 +1,7 @@
 # BDEA - Abgabe 3 - Doku
 Die folgende Doku ist ebenfalls in diesen Dateien zu finden:
-- Begründung Cassandra & Datenmodellierung: **data-model.pdf**
-- Setup Cassandra: **setup.pdf**
+- Datenmodellierung: **data-model.pdf**
+- Begründung Cassandra & Setup Cassandra: **setup.pdf**
 - Queries: **queries.pdf**
 - Lessons Learned: **lessons-learned.pdf**
 
@@ -19,13 +19,6 @@ Folgende Abfragen soll das System unterstützen:
    - wahlweise die 25 neusten oder die 25 beliebtesten Posts der verfolgten Accounts (per DB-Abfrage)
 5. Caching der Posts für die Startseite (vgl. 4), erfordert einen sog. Fan-Out in den Cache jedes Followers beim Schreiben eines neuen Posts 
 6. Auflisten der 25 beliebtesten Posts, die ein geg. Wort enthalten (falls möglich auch mit UND-Verknüpfung mehrerer Worte)
-
-## Begründung Cassandra
-Cassandra erschien dem Team aufgrund der Vorlesungsinhalte als eine sichere Wahl.
-Im Nachgang kann festgestellt werden, dass Cassandra trotz aller Vorteile für ein Twitter-Szenario unangemessen ist.
-Viele mögliche (und auch zum Teil in der Augabenstellung geforderten) Queries sind schlichtweg ohne massives Aufblähen der Datenmenge nicht darstellbar.
-Im Anbetracht alternativer Technologien und deren Möglichkeiten, Interaktionen in einem sozialen Netzwerk zu speichern und zu prozessieren, ist die Wahl von 
-Cassandra für diese Aufgabenstellung kaum rechtfertigbar.
 
 ## Datenmodellierung
 Zunächst ist es wichtig zu erwähnen, dass in C* die Datenmodellierung nicht die klassischen Konzepte der Datenmodellierung
@@ -61,6 +54,13 @@ als die erneute Extraktion der relevanten Tweets, bei jedem Abruf der Startseite
 wird dieser zudem ebenfalls in den Cache eines jeden Nutzers eingefügt, welcher als Follower des Authors in der Tabelle **follower_relations_by_users** gespeichert ist.
 
 Die Tabellen **top100_accounts_by_time** und **top100_followers_by_time** dienen als Time-Series-Tables für die Umsetzung der Queries 2 und 3. 
+
+## Begründung Cassandra
+Cassandra erschien dem Team aufgrund der Vorlesungsinhalte als eine sichere Wahl.
+Im Nachgang kann festgestellt werden, dass Cassandra trotz aller Vorteile für ein Twitter-Szenario unangemessen ist.
+Viele mögliche (und auch zum Teil in der Augabenstellung geforderten) Queries sind schlichtweg ohne massives Aufblähen der Datenmenge nicht darstellbar.
+Im Anbetracht alternativer Technologien und deren Möglichkeiten, Interaktionen in einem sozialen Netzwerk zu speichern und zu prozessieren, ist die Wahl von
+Cassandra für diese Aufgabenstellung kaum rechtfertigbar.
 
 ## Setup Cassandra
 
