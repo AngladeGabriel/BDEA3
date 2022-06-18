@@ -5,6 +5,8 @@ Die folgende Doku ist ebenfalls in diesen Dateien zu finden:
 - Queries: **queries.pdf**
 - Lessons Learned: **lessons-learned.pdf**
 
+Als Datenbank wurde die No-SQL Datenbank Cassandra gewählt. Näheres dazu im Abschnitt **Begründung Cassandra**.
+
 ### Aufgabenstellung: Wir zwitschern uns einen!
 Lassen Sie uns unser eigenes **Social Network** aufbauen. Damit es realistisch wird, stelle ich Ihnen unten einige (aus Twitter extrahierte Follower-Beziehungen zur Verfügung (der Original-Link existiert leider nicht mehr)) sowie einige Posts von Prominenten, die Sie bspw. zufällig auf die 100 User IDs mit den meisten Followern verteilen (vgl. Abfragen). Ferner soll das System das Speichern von Likes für Posts unterstützen (also von welchem User wurde ein Post eines anderen Users gelikt), diese generieren Sie bitte zufällig an passender Stelle.
 
@@ -39,11 +41,13 @@ Im Wesentlichen werden die Daten in den Tabellen **follower_relations_by_users**
 **follower_relations_by_users**:
 - Den Partition-Key stellt hier der **username** dar, welcher an die Bedingung geknüpft ist, unique zu sein
 - Der Clustering-Key **rel_type** gliedert die gespeicherten Follower Relationen in **"follower"** und **"follows"** Relationen
+- Durch die doppelte Speicherung einer Relation, jeweils einmal als **"follows"** beim folgenden und als **"follower"** beim verfolgten Account, ermöglicht eine schnelle Abfrage vin bspw. allen verfolgten oder folgenden Accounts eines bestimmten Nutzers
 - Da in C* jede Kombination aus Partikion-Key und Clustering-Key unique sein muss, damit ein **INSERT** nicht zu einem **UPDATE** wird, wurde für den Clustering-Key ebenfalls die Id des Ziels der Relation als Attribut mit aufgenommen (**rel_target_id**)
 - Darüber hinaus wird für jede gespeicherte Relation der **rel_target_username** mit gespeichert, welche anhand eines Skripts (**/cleaning_scripts/follower_relations.py**) generiert wurden
 
 **tweets_by_authors**
 - Den Partition-Key stellt hier der Name des Authors (**author**) dar, für welchen nun eine beliebige Menge an Tweets gespeichert werden kann (begrenzt lediglich von den systembedingten Limitierungen von C*)
+- Hiermit wird sichergestellt, dass die Tweets desselben Authors auch immer auf der gleichen Maschine gespeichert werden, was eine Bulk Abfrage erleichtert/beschleunigt
 - Als Clustering-Keys werden hier die **date_time** zu der der Tweet abgesetzt wurde, sowie eine eindeutige **tweet_id** gespeichert
 - darüber hinaus beinhaltet jeder Datensatz weitere Informationen über den jeweiligen Tweet, wie bspw. den Inhalt (**content**)
 
