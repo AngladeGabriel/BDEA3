@@ -4,6 +4,7 @@ LABEL description="Thanks to Jeff Harwell for this image, but not for his stupid
 RUN rm -f /etc/cassandra/cassandra.yaml
 COPY ./yml/etc/cassandra/cassandra.yaml /etc/cassandra/cassandra.yaml
 RUN rm -f ./docker-entrypoint.sh
+RUN mkdir data
 # set own skript
 COPY ./docker-entry/docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint.sh
