@@ -83,7 +83,8 @@ Da es sich hierbei um einen lokalen Testcluster handelt sind die Authentisierung
 Nach der anfänglichen Start-Phase des Clusters kann mithilfe von ```docker ps```gepfüft werden, ob auch alle Nodes vorhanden sind (cass1, cass2, cass3).  
 Mit ```docker exec -it cass1 cqlsh``` sowie darauf folgend ```describe keyspaces``` kann überprüft werden, ob CQL korrekt funktioniert. 
 
-Mithilfe von ```docker exec -it cass1 nodetool status``` lässt sich der Cluster sowie sein Status beschreiben.
+Mithilfe von ```docker exec -it cass1 nodetool status``` lässt sich der Cluster sowie sein Status beschreiben.</br></br>
+![Nodetool](assets/nodetool.png)
 
 ### CSVs in Container kopieren
 Da die generierten CSV Dateien (Generierung anhand der Skripts **/cleaning_scripts/tweets.py** und **/cleaning_scripts/follower_relations.py**) leider zum Teil die maximale git-Größe übersteigen müssen diese manuell vom jeweiligen Speicherort importiert werden.
@@ -160,6 +161,8 @@ Bei der Auswahl der Technologie würden sich die Teammitglieder in Zukunft auf f
 - Mit einem kleinen Datenset und (wenn auch evtl funktionseingeschränkten) offiziellen Docker-Images ein Proof-Of-Concept (POC) erarbeiten
 - Auf Basis der Learnings des POC die Datenmodellierung beenden
 - Die Container auf die spezifischen Anforderungen anpassen und somit den ersten Demo-Stand erreichen
+
+#### Einschränkungen von Cassandra
 
 #### BigData Datenbanken brauchen Platz
 Cassandra ist, wie andere Datenbanken im BigData Bereich recht ressourcen-hungrig.
