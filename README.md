@@ -1,6 +1,9 @@
-# BDEA - Abgabe 3
-
-- Quelle: [Setup Cassandra as dockerized Cluster](https://blog.digitalis.io/containerized-cassandra-cluster-for-local-testing-60d24d70dcc4)
+# BDEA - Abgabe 3 - Doku
+Die folgende Doku ist ebenfalls in diesen Dateien zu finden:
+- Begründung Cassandra & Datenmodellierung: **data-model.pdf**
+- Setup Cassandra: **setup.pdf**
+- Queries: **queries.pdf**
+- Lessons Learned: **lessons-learned.pdf**
 
 ### Aufgabenstellung: Wir zwitschern uns einen!
 Lassen Sie uns unser eigenes **Social Network** aufbauen. Damit es realistisch wird, stelle ich Ihnen unten einige (aus Twitter extrahierte Follower-Beziehungen zur Verfügung (der Original-Link existiert leider nicht mehr)) sowie einige Posts von Prominenten, die Sie bspw. zufällig auf die 100 User IDs mit den meisten Followern verteilen (vgl. Abfragen). Ferner soll das System das Speichern von Likes für Posts unterstützen (also von welchem User wurde ein Post eines anderen Users gelikt), diese generieren Sie bitte zufällig an passender Stelle.
@@ -11,9 +14,9 @@ Folgende Abfragen soll das System unterstützen:
 2. Finden der 100 Accounts mit den meisten Followern
 3. Finden der 100 Accounts, die den meisten der Accounts folgen, die in 1) gefunden wurden
 4. Auflisten der Informationen für die persönliche Startseite eines beliebigen Accounts (am besten mit den in 2) gefundenen Accounts ausprobieren); die Startseite soll Folgendes beinhalten (als getrennte Queries umsetzen):
-- die Anzahl der Follower
-- die Anzahl der verfolgten Accounts
-- wahlweise die 25 neusten oder die 25 beliebtesten Posts der verfolgten Accounts (per DB-Abfrage)
+   - die Anzahl der Follower
+   - die Anzahl der verfolgten Accounts
+   - wahlweise die 25 neusten oder die 25 beliebtesten Posts der verfolgten Accounts (per DB-Abfrage)
 5. Caching der Posts für die Startseite (vgl. 4), erfordert einen sog. Fan-Out in den Cache jedes Followers beim Schreiben eines neuen Posts 
 6. Auflisten der 25 beliebtesten Posts, die ein geg. Wort enthalten (falls möglich auch mit UND-Verknüpfung mehrerer Worte)
 
@@ -42,8 +45,8 @@ Im Wesentlichen werden die Daten in den Tabellen **follower_relations_by_users**
 
 **follower_relations_by_users**:
 - Den Partition-Key stellt hier der **username** dar, welcher an die Bedingung geknüpft ist, unique zu sein
-- Der Clustering-Key **rel_type** gliedert die gespeicherten Follower Relationen in "follower" und "follows" Relationen
-- Da in C* jede Kombination aus Partikion-Key und Clustering-Key unique sein muss, damit ein INSERT nicht zu einem UPDATE wird, wurde für den Clustering-Key ebenfalls die Id des Ziels der Relation als Attribut mit aufgenommen (**rel_target_id**)
+- Der Clustering-Key **rel_type** gliedert die gespeicherten Follower Relationen in **"follower"** und **"follows"** Relationen
+- Da in C* jede Kombination aus Partikion-Key und Clustering-Key unique sein muss, damit ein **INSERT** nicht zu einem **UPDATE** wird, wurde für den Clustering-Key ebenfalls die Id des Ziels der Relation als Attribut mit aufgenommen (**rel_target_id**)
 - Darüber hinaus wird für jede gespeicherte Relation der **rel_target_username** mit gespeichert, welche anhand eines Skripts (**/cleaning_scripts/follower_relations.py**) generiert wurden
 
 **tweets_by_authors**
@@ -79,7 +82,7 @@ Mit ```docker exec -it cass1 cqlsh``` sowie darauf folgend ```describe keyspaces
 Mithilfe von ```docker exec -it cass1 nodetool status``` lässt sich der Cluster sowie sein Status beschreiben.
 
 ### CSVs in Container kopieren
-Da die generierten CSV Dateien leider zum Teil die maximale git-Größe übersteigen müssen diese manuell vom jeweiligen Speicherort importiert werden.
+Da die generierten CSV Dateien (Generierung anhand der Skripts **/cleaning_scripts/tweets.py** und **/cleaning_scripts/follower_relations.py**) leider zum Teil die maximale git-Größe übersteigen müssen diese manuell vom jeweiligen Speicherort importiert werden.
 
 ```bash
 cd Documents/UNI/BDEA/CA_3/BDEA3/
@@ -150,9 +153,9 @@ Der naive Ansatz, sich auf eine Datenbank zu stürzen weil man neugierig ist und
 wenn auch sicherlich von gutem Willen strotzend, kein methodisch sauberes Vorgehen.
 Bei der Auswahl der Technologie würden sich die Teammitglieder in Zukunft auf folgendes Vorgehen verlassen:
 - Anforderungen evaluieren
-- Mit einem kleinen Datenset und (wenn auch evtl funktionseingeschränkten) offiziellen Docker-Images ein Proof-Of-Concept (POC) erarbeiten.
+- Mit einem kleinen Datenset und (wenn auch evtl funktionseingeschränkten) offiziellen Docker-Images ein Proof-Of-Concept (POC) erarbeiten
 - Auf Basis der Learnings des POC die Datenmodellierung beenden
-- Die Container auf die spezifischen Anforderungen anpassen und somit den ersten Demo-Stand erreichen.
+- Die Container auf die spezifischen Anforderungen anpassen und somit den ersten Demo-Stand erreichen
 
 #### BigData Datenbanken brauchen Platz
 Cassandra ist, wie andere Datenbanken im BigData Bereich recht ressourcen-hungrig.
@@ -175,4 +178,4 @@ Im Falle dieser Abgabe wurde das Team mit folgenden Problemen konfrontiert:
 
 #### Reine Schreibgeschwindigkeit rechtfertigt nicht alles
 Im Anbetracht der Zeitaufwände die Erbracht werden mussten, um ein starres, sehr eingeschränktes Query-Schema auf den gegebenen Use-Case anzuwenden sowie der Teils stark suboptimalen Lösungen die daraus resultierten ist abzuwägen, ob nicht in vielen Fällen eine flexiblere Datenbank in ihren Vorteilen überwiegt.
-Gerade im Bereich Datenanalyse sowie nested Queries ist Cassandra in reinform extrem Eingeschränkt.
+Gerade im Bereich Datenanalyse sowie nested Queries ist Cassandra in reinform extrem eingeschränkt.
