@@ -3,64 +3,72 @@ networks:
   cassandra:  # docker network where all cassandra nodes will be put in
 services:
   cass1:
-    image: jeffharwell/cassandra-lucene:3.11.6.0v1   # better to use a specific version, if you want to control upgrades
+    build: .
+    #image: jeffharwell/cassandra-lucene:3.11.6.0v1   # better to use a specific version, if you want to control upgrades
     container_name: cass1
     hostname: cass1
     mem_limit: 4g  # It's not strictly required, but it's better to have some memory limit
     healthcheck:
-      test: ["CMD", "rm", "-rf", "rm -rf /var/lib/cassandra/data/system/peers-37f71aca7dc2383ba70672528af04d4f/md-3-big-Data.db"]
-      interval: 5s
-      timeout: 5s
-      retries: 60
+        test: ["CMD", "rm", "-rf", "rm -rf /var/lib/cassandra/data/system/peers-37f71aca7dc2383ba70672528af04d4f/md-3-big-Data.db"]
+        interval: 5s
+        timeout: 5s
+        retries: 60
     networks:
       - cassandra
     ports:
       - "9042:9042"  # Expose native binary CQL port for your apps
     volumes:
       - ./yml/jmx-exporter:/opt/jmx-exporter
+      - ./yml/etc/cassandra/cassandra.yaml:/cassandra.yaml
+    #command: cp ./cassandra.yaml ./etc/cassandra/cassandra.yaml
     environment: &environment    # Declare and save environments variables into "environment"
-      CASSANDRA_SEEDS: cass1, cass2
-
+        CASSANDRA_SEEDS: cass1, cass2
+        CASSANDRA_ENABLE_MATERIALIZED_VIEWS: true
+        
 
   cass2:
-    image: jeffharwell/cassandra-lucene:3.11.6.0v1
+    build: .
+    #image: jeffharwell/cassandra-lucene:3.11.6.0v1   # better to use a specific version, if you want to control upgrades
     container_name: cass2
     hostname: cass2
     mem_limit: 4g
     healthcheck:
-      test: ["CMD", "rm", "-rf", "rm -rf /var/lib/cassandra/data/system/peers-37f71aca7dc2383ba70672528af04d4f/md-3-big-Data.db"]
-      interval: 5s
-      timeout: 5s
-      retries: 60
+        test: ["CMD", "rm", "-rf", "rm -rf /var/lib/cassandra/data/system/peers-37f71aca7dc2383ba70672528af04d4f/md-3-big-Data.db"]
+        interval: 5s
+        timeout: 5s
+        retries: 60
     networks:
       - cassandra
     ports:
       - "9043:9042"  # Expose native binary CQL port for your apps
     volumes:
       - ./yml/jmx-exporter:/opt/jmx-exporter
+      - ./yml/etc/cassandra/cassandra.yaml:/cassandra.yaml
     environment: *environment    # point to "environment" to use the same environment variables as cass1
     depends_on:
       - 'cass1'
   cass3:
-    image: jeffharwell/cassandra-lucene:3.11.6.0v1
+    build: .
+    #image: jeffharwell/cassandra-lucene:3.11.6.0v1   # better to use a specific version, if you want to control upgrades
     container_name: cass3
     hostname: cass3
     mem_limit: 4g
     healthcheck:
-      # this has to be the worst fix in the history of computing. Somehow, nodes would fail because of a corrupted SSTable
-      # rebuilding the image would be a waste of time, as many ressources referenced are no longer available (would mean a full rebuild)
-      # -> We have spend way to much time to get lucene in cassandra anyways so far
-      # abusing healthcheck to quickly delete the corrupted SSTable works tho
-      test: ["CMD", "rm", "-rf", "rm -rf /var/lib/cassandra/data/system/peers-37f71aca7dc2383ba70672528af04d4f/md-3-big-Data.db"]
-      interval: 5s
-      timeout: 5s
-      retries: 60
+        # this has to be the worst fix in the history of computing. Somehow, nodes would fail because of a corrupted SSTable
+        # rebuilding the image would be a waste of time, as many ressources referenced are no longer available (would mean a full rebuild)
+        # -> We have spend way to much time to get lucene in cassandra anyways so far
+        # abusing healthcheck to quickly delete the corrupted SSTable works tho
+        test: ["CMD", "rm", "-rf", "rm -rf /var/lib/cassandra/data/system/peers-37f71aca7dc2383ba70672528af04d4f/md-3-big-Data.db"]
+        interval: 5s
+        timeout: 5s
+        retries: 60
     networks:
       - cassandra
     ports:
       - "9044:9042"  # Expose native binary CQL port for your apps
     volumes:
       - ./yml/jmx-exporter:/opt/jmx-exporter
+      - ./yml/etc/cassandra/cassandra.yaml:/cassandra.yaml
     environment: *environment    # point to "environment" to use the same environment variables as cass1
     depends_on:
       - 'cass2'
