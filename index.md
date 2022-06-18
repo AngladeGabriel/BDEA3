@@ -96,7 +96,12 @@ SELECT COUNT(*) FROM twitter.tweets_by_authors;
 -> Extraktion der Top 100 per Skript und Schreiben in Time-Series-Table</br>
 -> Abfrage dann auf dieser Table</br>
 ```SELECT follower_json FROM twitter.top100_accounts_by_time LIMIT 1;```</br></br>
-3. tbd</br></br>
+3. -> Extraktion der Top 100 "Mainstream-Follower" per Skript und Schreiben in Time-Series-Table</br>
+-> Abfrage dann auf dieser Table</br>
+```SELECT follower_json FROM twitter.top100_followers_by_time LIMIT 1;```</br></br>
+
+Das Skript für Query 2 und Query 3 ist als periodisch laufender Batch-Job (z.B unter Verwendung eines Jenkins-Automatisierungsservers) gedacht. 
+
 4. 
     1. ```SELECT username, COUNT(\*) AS followers FROM twitter.follower_relations_by_users WHERE username = 'katyperry' AND rel_type = 'follower';```</br></br>
     2. ```SELECT username, COUNT(\*) AS follows FROM twitter.follower_relations_by_users WHERE username = 'katyperry' AND rel_type = 'follows';```</br></br>
@@ -145,4 +150,3 @@ Im Falle dieser Abgabe wurde das Team mit folgenden Problemen konfrontiert:
 #### Reine Schreibgeschwindigkeit rechtfertigt nicht alles
 Im Anbetracht der Zeitaufwände die Erbracht werden mussten, um ein starres, sehr eingeschränktes Query-Schema auf den gegebenen Use-Case anzuwenden sowie der Teils stark suboptimalen Lösungen die daraus resultierten ist abzuwägen, ob nicht in vielen Fällen eine flexiblere Datenbank in ihren Vorteilen überwiegt.
 Gerade im Bereich Datenanalyse sowie nested Queries ist Cassandra in reinform extrem Eingeschränkt.
- 
