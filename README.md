@@ -84,7 +84,7 @@ Nach der anfänglichen Start-Phase des Clusters kann mithilfe von ```docker ps``
 Mit ```docker exec -it cass1 cqlsh``` sowie darauf folgend ```describe keyspaces``` kann überprüft werden, ob CQL korrekt funktioniert. 
 
 Mithilfe von ```docker exec -it cass1 nodetool status``` lässt sich der Cluster sowie sein Status beschreiben.</br></br>
-![Nodetool](assets/nodetool.png)
+![Nodetool](assets/nodetool.PNG)
 
 ### CSVs in Container kopieren
 Da die generierten CSV Dateien (Generierung anhand der Skripts **/cleaning_scripts/tweets.py** und **/cleaning_scripts/follower_relations.py**) leider zum Teil die maximale git-Größe übersteigen müssen diese manuell vom jeweiligen Speicherort importiert werden.
@@ -162,7 +162,19 @@ Bei der Auswahl der Technologie würden sich die Teammitglieder in Zukunft auf f
 - Auf Basis der Learnings des POC die Datenmodellierung beenden
 - Die Container auf die spezifischen Anforderungen anpassen und somit den ersten Demo-Stand erreichen
 
-#### Einschränkungen von Cassandra
+#### Besonderheiten/Einschränkungen von Cassandra
+Die Datenmodellierung in C* entspricht nicht den klassischen Konzepten der Datenmodellierung
+relationaler Datenbanken. Statt sich anhand eines ER-Diagramms die benötigten Entitäten und deren
+Beziehungen zu überlegen, verfolgt man hier den Ansatz, als erstes die Queries zu entwerfen.
+Dies hat letztendlich zur Folge, dass für so gut wie jede Abfrage eine eigene Tabelle entworfen wird, welche die Daten in einem für die Query optimalen Schema bereitstellt.
+
+In C* werden gewisse Operationen, welche in relationalen Datenbanken als selbstversändlich angesehen werden, schlichtweg nicht unterstützt.
+Schwierige sind daher Operationen wie bspw. **GROUP BY** und **ORDER BY**, welche nur unter erheblichen Einschränkungen, im Vergleich
+zu relationalen Datenbanken, verwendet/umgesetzt werden können.
+
+#### Reine Schreibgeschwindigkeit rechtfertigt nicht alles
+Im Anbetracht der Zeitaufwände, die aufgrund der Wahl von C* als Datenbank erbracht werden mussten, um ein starres, sehr eingeschränktes Query-Schema auf den gegebenen Use-Case anzuwenden sowie der teils stark suboptimalen Lösungen die daraus resultierten ist abzuwägen, ob nicht in vielen Fällen eine flexiblere Datenbank in ihren Vorteilen überwiegt.
+Gerade im Bereich Datenanalyse sowie nested Queries ist Cassandra in reinform extrem eingeschränkt.
 
 #### BigData Datenbanken brauchen Platz
 Cassandra ist, wie andere Datenbanken im BigData Bereich recht ressourcen-hungrig.
@@ -182,7 +194,3 @@ Im Falle dieser Abgabe wurde das Team mit folgenden Problemen konfrontiert:
   - Das von Grundauf installieren von Cassandra auf einem Dockercontainer ist recht mühsam - vor allem wenn die meisten Guides auf veraltete und inzwischen archivierte Inhalte zeigen.
   - Das Aufspüren der jar-files eines vor 4 Jahre eingestellten Plugins kann Kopfschmerzen bereiten. Unter Umständen hätte das Team bei Aufmerksamer betrachtung des Repositories früher bemerken können, dass das Projekt inzwischen eingestellt ist und hätte sich dann nach anderen Technologien umgesehen.
   - Selbst nach erfolgreicher installation von Cassandra und dem Lucene-Plugin sowie der erzeugung eines stabilen Docker-Containers kann es bei der Bildung eines Clusters anscheinend wieder kritisch werden - an diesem Punkt hat das Team sich für das neue Base-Image entschieden (Zeitmangel, Frust)
-
-#### Reine Schreibgeschwindigkeit rechtfertigt nicht alles
-Im Anbetracht der Zeitaufwände die Erbracht werden mussten, um ein starres, sehr eingeschränktes Query-Schema auf den gegebenen Use-Case anzuwenden sowie der Teils stark suboptimalen Lösungen die daraus resultierten ist abzuwägen, ob nicht in vielen Fällen eine flexiblere Datenbank in ihren Vorteilen überwiegt.
-Gerade im Bereich Datenanalyse sowie nested Queries ist Cassandra in reinform extrem eingeschränkt.
