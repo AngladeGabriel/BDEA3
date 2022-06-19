@@ -1,11 +1,4 @@
 # BDEA - Abgabe 3 - Doku
-Die folgende Doku ist ebenfalls in diesen Dateien zu finden:
-- Datenmodellierung: **data-model.pdf**
-- Begründung Cassandra & Setup Cassandra: **setup.pdf**
-- Queries: **queries.pdf**
-- Lessons Learned: **lessons-learned.pdf**
-
-Als Datenbank wurde die No-SQL Datenbank Cassandra gewählt. Näheres dazu im Abschnitt **Begründung Cassandra**.
 
 ### Aufgabenstellung: Wir zwitschern uns einen!
 Lassen Sie uns unser eigenes **Social Network** aufbauen. Damit es realistisch wird, stelle ich Ihnen unten einige (aus Twitter extrahierte Follower-Beziehungen zur Verfügung (der Original-Link existiert leider nicht mehr)) sowie einige Posts von Prominenten, die Sie bspw. zufällig auf die 100 User IDs mit den meisten Followern verteilen (vgl. Abfragen). Ferner soll das System das Speichern von Likes für Posts unterstützen (also von welchem User wurde ein Post eines anderen Users gelikt), diese generieren Sie bitte zufällig an passender Stelle.
@@ -23,6 +16,8 @@ Folgende Abfragen soll das System unterstützen:
 6. Auflisten der 25 beliebtesten Posts, die ein geg. Wort enthalten (falls möglich auch mit UND-Verknüpfung mehrerer Worte)
 
 ## Datenmodellierung
+Als Datenbank wurde die No-SQL Datenbank Cassandra gewählt. Näheres dazu im Abschnitt **Begründung Cassandra**.
+
 Zunächst ist es wichtig zu erwähnen, dass in C* die Datenmodellierung nicht die klassischen Konzepte der Datenmodellierung
 relationaler Datenbanken verfolgt werden. Statt sich anhand eines ER-Diagramms die benötigten Entitäten und deren
 Beziehungen zu überlegen, verfolgt man hier den Ansatz, als erstes die Queries zu entwerfen. Dies hat unter anderem den Hintergrund, dass in C* gewisse Operationen,
